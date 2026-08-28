@@ -48,7 +48,10 @@ public class PlayerController : MonoBehaviour
     public int numberOfPotions = 0;
     public int numberOfFood = 0;
     public int health = 10;
-    public int money = 0;
+    public int maxHealth = 10;
+    public int money = 50;
+    public GameObject healthText;
+    public GameObject moneyText;
 
 
     private void Awake()
@@ -87,6 +90,11 @@ public class PlayerController : MonoBehaviour
             DontDestroyOnLoad(inventoryMenu.transform.root.gameObject);
         }
     }
+    private void UpdateUI()
+    {
+        moneyText.GetComponent<TextMeshProUGUI>().text = money.ToString() + " Gold";
+        healthText.GetComponent<TextMeshProUGUI>().text = health.ToString() + " / " + maxHealth.ToString();
+    }
   
 
     private void Update()
@@ -114,6 +122,7 @@ public class PlayerController : MonoBehaviour
         }
 
         Doors();
+        UpdateUI();
     }
 
     private void FixedUpdate()

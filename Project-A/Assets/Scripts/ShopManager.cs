@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 public class ShopManager : MonoBehaviour
 {
@@ -16,20 +17,28 @@ public class ShopManager : MonoBehaviour
     public int numberOfPotions = 5;
     public int numberOfFood = 5;
     public GameObject goldText;
+    public bool isPlayerInShop;
     
-    private void Start()
+    
+    private void Awake()
     {
-        Instance = this;
-        if (ShopManager.Instance != null)
+        if (Instance != null && Instance != this)
         {
-            DontDestroyOnLoad(gameObject);
-            if (ShopMenu != null)
-            {
-                DontDestroyOnLoad(ShopMenu.transform.root.gameObject);
-                ShopMenu.SetActive(false);
-            }
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        // ResolvePrefabReferences();
+        DontDestroyOnLoad(gameObject);
+
+        if (ShopMenu != null)
+        {
+            ShopMenu.SetActive(false);
         }
     }
+
+    
     private void Update()
     {
         if (ShopMenu == null || PlayerController.Instance == null)
@@ -37,35 +46,56 @@ public class ShopManager : MonoBehaviour
             return;
         }
 
-        bool playerAtShop = Collider2DIsTouchingShop();
-        bool canOpenShop = !PlayerController.Instance.gamePaused && !PlayerController.Instance.isInInventory;
-        ShopMenu.SetActive(playerAtShop && canOpenShop);
-    }
-    private bool Collider2DIsTouchingShop()
-    {
-        Collider2D playerCollider = PlayerController.Instance.GetComponent<Collider2D>();
-        Collider2D shopCollider = Shop != null
-            ? Shop.GetComponentInChildren<Collider2D>()
-            : GetComponentInChildren<Collider2D>();
-
-        if (playerCollider != null && shopCollider != null)
+        if (Input.GetButtonDown("Shop"))
         {
-            return playerCollider.bounds.Intersects(shopCollider.bounds);
+            isPlayerInShop = !ShopMenu.activeSelf;
+            ShopMenu.SetActive(isPlayerInShop);
+            UpdateUI();
         }
-        Debug.Log("Player or Shop collider is missing.");
-
-        return false;
     }
-    private void updateUI()
+    
+    private void UpdateUI()
     {
-        swordText.GetComponent<UnityEngine.UI.Text>().text = "Swords: " + numberOfSwords;
-        shieldText.GetComponent<UnityEngine.UI.Text>().text = "Shields: " + numberOfShields;
-        potionText.GetComponent<UnityEngine.UI.Text>().text = "Potions: " + numberOfPotions;
-        foodText.GetComponent<UnityEngine.UI.Text>().text = "Food: " + numberOfFood;
-        goldText.GetComponent<UnityEngine.UI.Text>().text = "Gold: " + PlayerController.Instance.money;
+        if (PlayerController.Instance == null)
+        {
+            return;
+        }
+
+        SetText(swordText, "Swords: " + numberOfSwords);
+        SetText(shieldText, "Shields: " + numberOfShields);
+        SetText(potionText, "Potions: " + numberOfPotions);
+        SetText(foodText, "Food: " + numberOfFood);
+        SetText(goldText, "Gold: " + PlayerController.Instance.money);
     }
+
+    private void SetText(GameObject target, string value)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        UnityEngine.UI.Text text = target.GetComponent<UnityEngine.UI.Text>();
+        if (text != null)
+        {
+            text.text = value;
+            return;
+        }
+
+        TMP_Text tmpText = target.GetComponent<TMP_Text>();
+        if (tmpText != null)
+        {
+            tmpText.text = value;
+        }
+    }
+
     public void BuyItem(string itemType)
     {
+        if (PlayerController.Instance == null)
+        {
+            return;
+        }
+
         switch (itemType)
         {
             case "Sword":
@@ -101,7 +131,7 @@ public class ShopManager : MonoBehaviour
                 }
                 break;
         }
-        updateUI();
+        UpdateUI();
     }
 
 }

@@ -9,12 +9,10 @@ public class PauseManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-
-            if (PauseMenu != null)
-            {
-                DontDestroyOnLoad(PauseMenu.transform.root.gameObject);
-            }
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
         }
     }
     private void Start()

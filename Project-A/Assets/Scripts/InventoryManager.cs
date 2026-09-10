@@ -12,14 +12,13 @@ public class InventoryManager : MonoBehaviour
     public GameObject foodText;
     private void Start()
     {
-        Instance = this;
-        if (InventoryManager.Instance != null)
+        if (Instance == null)
         {
-            DontDestroyOnLoad(gameObject);
-            if (inventoryMenu != null)
-            {
-                DontDestroyOnLoad(inventoryMenu.transform.root.gameObject);
-            }
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
         }
     }
     private void Update()

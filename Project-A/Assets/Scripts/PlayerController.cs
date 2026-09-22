@@ -24,9 +24,7 @@ public class PlayerController : MonoBehaviour
 	[SerializeField] private Vector2 maximum = new Vector2(10f, 5f);
     [SerializeField] private List<MapCutout> cutouts = new List<MapCutout>();
     public GameObject DungeonDoor;
-    public GameObject GreenhouseDoor;
     [SerializeField] private Vector2 dungeonDoorPosition;
-    [SerializeField] private Vector2 greenhouseDoorPosition;
 
     [SerializeField] private float doorInteractionDistance = 1f;
 
@@ -34,41 +32,25 @@ public class PlayerController : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Collider2D playerCollider;
     private bool wasTouchingDungeonDoor;
-    private bool wasTouchingGreenhouseDoor;
     private int walkingSpriteIndex;
     private int fightingSpriteIndex;
     [SerializeField] private bool isFighting;
     private float spriteTimer;
     public GameObject PauseMenu;
     public GameObject inventoryMenu;
-    public GameObject ShopMenu;
     public static PlayerController Instance;
     public bool gamePaused = false;
     public bool isInInventory = false;
-    public bool isShopOpen = false;
     public int numberOfSwords = 0;
     public int numberOfShields = 0;
     public int numberOfPotions = 0;
     public int numberOfFood = 0;
-    public int shopSwords = 5;
-    public int shopShields = 5;
-    public int shopPotions = 5;
-    public int shopFood = 5;
     public int health = 10;
     public int maxHealth = 10;
     public int money = 100;
     public GameObject HUDPanel;
     public GameObject healthText;
     public GameObject moneyText;
-    public GameObject swordText;
-    public GameObject shieldText;
-    public GameObject potionText;
-    public GameObject foodText;
-    public GameObject goldText;
-    public GameObject SwordButton;
-    public GameObject ShieldButton;
-    public GameObject PotionButton;
-    public GameObject FoodButton;
 
 
     private void Awake()
@@ -90,8 +72,6 @@ public class PlayerController : MonoBehaviour
             PauseMenu = GameObject.Find("PauseMenu");
         if (inventoryMenu == null)
             inventoryMenu = GameObject.Find("InventoryMenu");
-        if (ShopMenu == null)
-            ShopMenu = GameObject.Find("ShopMenu");
         if (HUDPanel == null)
             HUDPanel = GameObject.Find("HUDPanel");
 
@@ -99,11 +79,6 @@ public class PlayerController : MonoBehaviour
         {
             Vector3 currentDoorPosition = DungeonDoor.transform.position;
             DungeonDoor.transform.position = new Vector3(dungeonDoorPosition.x, dungeonDoorPosition.y, currentDoorPosition.z);
-        }
-        if (GreenhouseDoor != null)
-        {
-            Vector3 currentDoorPosition = GreenhouseDoor.transform.position;
-            GreenhouseDoor.transform.position = new Vector3(greenhouseDoorPosition.x, greenhouseDoorPosition.y, currentDoorPosition.z);
         }
         if (PauseMenu != null)
         {
@@ -115,11 +90,7 @@ public class PlayerController : MonoBehaviour
             inventoryMenu.SetActive(false);
             DontDestroyOnLoad(inventoryMenu.transform.root.gameObject);
         }
-        if (ShopMenu != null)
-        {
-            ShopMenu.SetActive(false);
-            DontDestroyOnLoad(ShopMenu.transform.root.gameObject);
-        }
+
         if (HUDPanel != null)
         {
             HUDPanel.SetActive(true);
@@ -132,16 +103,6 @@ public class PlayerController : MonoBehaviour
             moneyText.GetComponent<TextMeshProUGUI>().text = money.ToString() + " Gold";
         if (healthText != null)
             healthText.GetComponent<TextMeshProUGUI>().text = health.ToString() + " / " + maxHealth.ToString();
-        if (swordText != null)
-            swordText.GetComponent<TextMeshProUGUI>().text = "Swords: " + shopSwords.ToString();
-        if (shieldText != null)
-            shieldText.GetComponent<TextMeshProUGUI>().text = "Shields: " + shopShields.ToString();
-        if (potionText != null)
-            potionText.GetComponent<TextMeshProUGUI>().text = "Potions: " + shopPotions.ToString();
-        if (foodText != null)
-            foodText.GetComponent<TextMeshProUGUI>().text = "Food: " + shopFood.ToString();
-        if (goldText != null)
-            goldText.GetComponent<TextMeshProUGUI>().text = money.ToString() + " Gold";
     }
   
 
@@ -150,6 +111,10 @@ public class PlayerController : MonoBehaviour
         if (health <= 0)
         {
             GameOver();
+        }
+        if (SceneManager.GetActiveScene().name == "Dungeon")
+        {
+            spriteRenderer.flipX = false;
         }
         if (isFighting)
         {
@@ -172,10 +137,7 @@ public class PlayerController : MonoBehaviour
         {
             ToggleInventoryMenu();
         }
-        if (Input.GetButtonDown("Shop"))
-        {
-            ToggleShopMenu();
-        }
+    
         if (Input.GetButtonDown("StopFighting") && isFighting)
         {
             isFighting = false;
@@ -199,7 +161,7 @@ public class PlayerController : MonoBehaviour
     }
     public void ToggleInventoryMenu()
     {
-        if (gamePaused || isShopOpen)
+        if (gamePaused)
             return;
 
         isInInventory = !isInInventory;
@@ -209,21 +171,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void ToggleShopMenu()
-    {
-        if (ShopMenu == null || gamePaused)
-            return;
-
-        if (isInInventory)
-        {
-            isInInventory = false;
-            if (inventoryMenu != null)
-                inventoryMenu.SetActive(false);
-        }
-
-        isShopOpen = !isShopOpen;
-        ShopMenu.SetActive(isShopOpen);
-    }
 
     private void UpdateSprite(Vector2 movement)
     {
@@ -255,60 +202,7 @@ public class PlayerController : MonoBehaviour
             spriteRenderer.sprite = walkingSprites[walkingSpriteIndex];
         }
     }
-    public void BuySwords()
-    {
-        if (shopSwords > 0 && money >= 5)
-        {
-            Debug.Log("Buying sword");
-            money -= 5;
-            numberOfSwords++;
-            shopSwords--;
-            UpdateUI();
-        }
-        else
-        {
-            Debug.Log("Not enough money to buy sword or no swords left in shop");
-        }
-    }
-    public void BuyShields()
-    {
-        if (shopShields > 0 && money >= 10)
-        {
-            Debug.Log("Buying shield");
-            money -= 10;
-            numberOfShields++;
-            shopShields--;
-            UpdateUI();
-        }
-        else
-        {
-            Debug.Log("Not enough money to buy shield or no shields left in shop");
-        }
-    }
-    public void BuyPotions()
-    {
-        if (shopPotions > 0 && money >= 10)
-        {
-            money -= 10;
-            numberOfPotions++;
-            shopPotions--;
-            UpdateUI();
-        }
-        else
-        {
-            Debug.Log("Not enough money to buy potion or no potions left in shop");
-        }
-    }
-    public void BuyFood()
-    {
-        if (shopFood > 0 && money >= 5)
-        {
-            money -= 5;
-            numberOfFood++;
-            shopFood--;
-            UpdateUI();
-        }
-    }
+    
 
     private void UpdateFightingSprite()
     {
@@ -375,6 +269,7 @@ public class PlayerController : MonoBehaviour
 
     public void BeginDungeonMode()
     {
+       
         rb.position = new Vector2(-2f, 0f);
         spriteRenderer.enabled = true;
         if (playerCollider != null)
